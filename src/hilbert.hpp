@@ -1,22 +1,23 @@
 // Order RGB tuples along a 3D Hilbert curve
 //
 // There are many possible ways to linearize the 3D RGB colorspace; Hilbert
-// curves are a nice one.
+// curves are a nice one. There are many possible Hilbert curves in 3D spaces;
+// the one I implement here is optimal for some locality measures.
 //
-// There are various algorithms to directly convert a coordinate tuple to a
-// Hilbert index and vice-versa, using Gray codes and bitwise operations.
-// They are likely more efficient than the algorithm I implement here, which
-// I came up with by looking at a picture of a Hilbert curve.
-//
-// Rather than translate between coordinates and Hilber indices, this simply
-// tells you which coordinate (that is, RGB color) occurs before the other on
-// the Hilbert curve.
 
 #ifndef HILBERT_HPP
 #define HILBERT_HPP
 
-#include "pixels.hpp"
+#include "colors.hpp"
 
+
+// Return the index of the color along the Hilbert traversal of the RGB
+// color space, in [0, 2^24);
+unsigned hilbert_encode(rgb c);
+
+// Return the color at the given index of the Hilbert traversal of the RGB
+// color space.
+rgb hilbert_decode(unsigned d);
 
 // Return true if lhs appears before rhs on a Hilbert traversal of the RGB
 // colorspace.

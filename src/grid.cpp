@@ -1,15 +1,13 @@
 #include "grid.hpp"
 
-#include <iostream>
+#include <array>
 #include <deque>
 #include <queue>
 #include <random>
 #include <stack>
-#include <vector>
+
 
 namespace {
-
-// TODO: all the masks should be arrays indexed by direction.
 
 // Enumerate the neighbor directions.
 constexpr uint8_t up    = 0;
@@ -17,146 +15,144 @@ constexpr uint8_t right = 1;
 constexpr uint8_t down  = 2;
 constexpr uint8_t left  = 3;
 
+constexpr std::array<uint8_t, 4> directions { up, right, down, left };
+
 constexpr uint8_t opposite_of(uint8_t dir)
 {
     return (dir + 2) % 4;
 }
 
-// At each node, set one or more bits indicating whether it is at the edge of
-// the grid, so we don't have to check at every step of the random walk. These
-// bits are used to index into the neighbors table.
-constexpr uint8_t at_edge[4] = {1, 2, 4, 8};
-constexpr uint8_t edge_mask = 0b00001111;
 
-// Use one bit to record if the node has been added to the spanning tree.
-constexpr uint8_t in_tree = 0b10000000;
-
-// Each node has a parent (except the root), recorded as the direction to the
-// parent, and packed into two bits of the node value.
-constexpr uint8_t parent_mask = 0b00110000;
-
-constexpr uint8_t get_parent_dir(uint8_t node)
+constexpr bool has_bit_set(uint8_t n, uint8_t b)
 {
-    return (node & parent_mask) >> 4;
+    return (n & (1U << b)) != 0;
 }
-
-void set_parent_dir(uint8_t & node, uint8_t dir)
-{
-    node = (node & ~parent_mask) | (dir << 4);
-}
-
-
-// After generating the tree, the bits used to indicate edges/neighbors are
-// no longer useful, and we can reuse them to record the children of each node.
-constexpr uint8_t child_mask[4] = {1, 2, 4, 8};
 
 } // anonymous namespace
 
 
-grid_graph::grid_graph(int rows, int cols)
-    : rows{rows}, cols{cols}
+bool grid_graph::node_t::get_edge(uint8_t direction) const
 {
-    build_jump_table();
-    build_neighbors_table();
-    nodes.resize(rows * cols);
+    return has_bit_set(edges, direction);
 }
 
 
-// To avoid a list of if statements for each step of the random walk, build a
-// simple jump table indexed by the direction, with the offset to the index for
-// each direction.
-void grid_graph::build_jump_table()
+void grid_graph::node_t::set_edge(uint8_t direction)
 {
+    edges |= (1U << direction);
+}
+
+
+grid_graph::grid_graph(size_t rows, size_t cols, rng_type & rng)
+    : nodes{rows * cols, {false, 0, 0}}
+    , rows{rows}
+    , cols{cols}
+    , root{0}
+    , jump{}
+    , neighbors{}
+{
+    init_node_edges();
+    init_jump_table();
+    init_neighbors_table();
+    span(rng);
+    link_children();
+}
+
+
+void grid_graph::init_node_edges()
+{
+    // Set a bit in each node along the edges of the grid. Nodes in corners
+    // will have two bits set.
+    //
+    // This is purely an optimization, so that later as we random walk around
+    // the grid, we don't have to check for the edge at each step.
+    for (size_t i = 0; i < cols; i++)
+        nodes[i].set_edge(up);
+    for (size_t i = cols * (rows - 1); i < rows * cols; i++)
+        nodes[i].set_edge(down);
+    for (size_t i = 0; i < rows * cols; i += cols)
+        nodes[i].set_edge(left);
+    for (size_t i = cols - 1; i < rows * cols; i += cols)
+        nodes[i].set_edge(right);
+}
+
+
+void grid_graph::init_jump_table()
+{
+    // Warning: unsigned arithmetic! The jump table is used e.g.
+    //
+    //    size_t node_above_n = n + jump[up];
+    //
+    // Unsigned arithmetic is notoriously error-prone, but the STL containers
+    // use unsigned integers everywhere, so the other options are 1) disable
+    // signedness warnings, 2) use signed indices and litter the code with
+    // casts (also error-prone), or 3) reimplement the STL containers.
     jump[up] = -cols;
     jump[right] = +1;
     jump[down] = +cols;
-    jump[left] = -1;
+    jump[left] = -1UL;
 }
 
 
-// The neighbors table is used during the random walk. A naive approach would
-// build a list of adjacent pixels before every random step. There are a
-// limited number of options: most pixels have four neighbors, those on the top
-// row have three neighbors, those on the bottom row have three neighbors in
-// different directions, etc. So, we can build a lookup table instead, and
-// precompute an index into the table for each node.
-//
-// Each node has four bits indicating whether it's on one or more edges, for 16
-// possible indexes, though only 9 of those will occur in images with more than
-// one row and column.
-//
-// Because pixels might have two, three, or four options, we might store the
-// number of possible directions, as well as the directions themselves.
-// Instead, I store 12 options for each, repeating the options six, four, or
-// three times, and all steps in the walk simply use a random number in [0, 11].
-// I haven't measured to see if this is actually a useful optimization.
-void grid_graph::build_neighbors_table()
+void grid_graph::init_neighbors_table()
 {
-    std::vector<uint8_t> directions;
-    for (int i = 0; i < 15; i++)
+    // For each possible value of a nodes `edges` member...
+    std::vector<uint8_t> available;
+    for (uint8_t edge_value = 0; edge_value < 15; edge_value++)
     {
-        directions.clear();
-        for (int dir = 0; dir < 4; dir++)
-            if (not (at_edge[dir] & i))
-                directions.push_back(dir);
+        // ...build a list of available neighbors. There will be at most four.
+        available.clear();
+        for (auto const dir: directions)
+            if(not has_bit_set(edge_value, dir))
+                available.push_back(dir);
 
-        for (int j = 0; j < 12; j++)
-            neighbors[i][j] = directions[j % directions.size()];
+        // Repeat these options to fill out twelve possible options (with two,
+        // three, or four directions, repeated as needed) for each node.
+        for (unsigned choice = 0; choice < 12; choice++)
+            neighbors[edge_value][choice] = available[choice % available.size()];
     }
+
+    // Skip edge_value 15, because for that to be true, all four edge bits
+    // would have to be set, which only happens in an image with one pixel.
 }
 
 
-// Reset the grid nodes to having the correct entries into the neighbors table,
-// and clear their "in-tree" bits.
-void grid_graph::reset()
+void grid_graph::span(rng_type & rng)
 {
-    for (auto & node: nodes)
-        node = 0;
-    for (int i = 0; i < cols; i++)
-        nodes[i] |= at_edge[up];
-    for (int i = cols * (rows - 1); i < rows * cols; i++)
-        nodes[i] |= at_edge[down];
-    for (int i = 0; i < rows * cols; i += cols)
-        nodes[i] |= at_edge[left];
-    for (int i = cols - 1; i < rows * cols; i += cols)
-        nodes[i] |= at_edge[right];
-}
+    std::uniform_int_distribution<size_t> d12(0, 11);
+    std::uniform_int_distribution<size_t> rnd_node(0, nodes.size() - 1);
 
+    // Make a random node the root of the tree; mark it as in the tree.
+    root = rnd_node(rng);
+    nodes[root].in_tree = true;
 
-// 1. Make a random node the root of the tree; mark it as in the tree.
-// 2. From each node, do a random walk until you connect to the existing tree,
-//    recording the direction to the next node (the parent) as you go. Note
-//    that the random walk will create cycles and overwrite previous parent
-//    info: that's OK.
-// 3. After a walk connects to the tree, go back and trace from the first node
-//    to the tree, following the parent directions, and marking these nodes as
-//    now in the tree. There are now no cycles.
-void grid_graph::span()
-{
-    reset();
-
-    std::random_device r;
-    std::mt19937_64 gen{r()};
-    std::uniform_int_distribution<> d12(0, 11);
-    std::uniform_int_distribution<> rnd_node(0, nodes.size() - 1);
-    root = rnd_node(gen);
-    nodes[root] |= in_tree;
+    // For each node, connect it to the existing tree with a random walk.
+    // Strangely enough, the order which you add nodes to the tree doesn't
+    // affect the random properties of the final tree!
     for (size_t start = 0; start < nodes.size(); start++)
     {
+        // Do a random walk until you connect to the existing tree, recording
+        // the direction to the next node (the parent) as you go. Note that the
+        // random walk will move in cycles sometimes, overwriting previous
+        // parent info: that's OK.
         auto here = start;
-        while (not (nodes[here] & in_tree))
+        while (not nodes[here].in_tree)
         {
-            uint8_t possible = nodes[here] & edge_mask;
-            uint8_t parent_dir = neighbors[possible][d12(gen)];
-            set_parent_dir(nodes[here], parent_dir);
+            uint8_t possible = nodes[here].edges;
+            uint8_t parent_dir = neighbors[possible][d12(rng)];
+            nodes[here].dir = parent_dir;
             here += jump[parent_dir];
         }
 
+        //  After a walk connects to the tree, go back and trace from the first
+        //  node to the tree, following the parent directions, marking these
+        //  nodes as now in the tree. Any loops/cycles are effectively removed
+        //  in this step, because only the final parent direction is followed.
         here = start;
-        while (not (nodes[here] & in_tree))
+        while (not nodes[here].in_tree)
         {
-            nodes[here] |= in_tree;
-            here += jump[get_parent_dir(nodes[here])];
+            nodes[here].in_tree = true;
+            here += jump[nodes[here].dir];
         }
     }
 
@@ -165,27 +161,28 @@ void grid_graph::span()
 
 
 // After the spanning tree generation in span(), each node points towards its
-// parent. During tree traversal, we need to go from a node to its children. We
-// could simply check each neighbor to see if it points to the node in question,
-// but instead we'll do another questionable optimization!
+// parent. During tree traversal, we need to go from a node to its children.
+// During traversal, we could simply check each neighbor to see if it points to
+// the node in question, but instead we'll do another questionable
+// optimization!
 //
 // Now that the random walks are done, we'll reuse the edge bits to indicate if
 // a neighbor is a child or not. Iterate over all the nodes, setting the child
 // bit in one neighbor based on the parent direction in the node.
 void grid_graph::link_children()
 {
-    for (size_t i = 0; i < nodes.size(); i++)
-        nodes[i] &= (~edge_mask);
+    for (auto & node: nodes)
+        node.edges = 0;
 
     for (size_t i = 0; i < nodes.size(); i++)
     {
         if (i == root)
             continue;
 
-        auto parent_dir = get_parent_dir(nodes[i]);
+        auto parent_dir = nodes[i].dir;
         auto child_dir = opposite_of(parent_dir);
         auto parent = i + jump[parent_dir];
-        nodes[parent] |= child_mask[child_dir];
+        nodes[parent].set_edge(child_dir);
     }
 }
 
@@ -202,8 +199,8 @@ std::vector<size_t> grid_graph::dfs() const
         unprocessed.pop();
         order.push_back(idx);
 
-        for (uint8_t dir = 0; dir < 4; dir++)
-            if (nodes[idx] & child_mask[dir])
+        for (auto const dir: directions)
+            if (nodes[idx].get_edge(dir))
                 unprocessed.push(idx + jump[dir]);
     }
 
@@ -223,8 +220,8 @@ std::vector<size_t> grid_graph::sdfs() const
         order.pop_back();
 
         int height = 0;
-        for (uint8_t dir = 0; dir < 4; dir++)
-            if (nodes[idx] & child_mask[dir])
+        for (auto const dir: directions)
+            if (nodes[idx].get_edge(dir))
                 height = std::max(height, heights[idx + jump[dir]] + 1);
 
         heights[idx] = height;
@@ -239,19 +236,20 @@ std::vector<size_t> grid_graph::sdfs() const
         order.push_back(node_idx);
 
         // Build a list of up to four children.
-        int children[4];
-        int num_children = 0;
-        for (int dir = 0; dir < 4; dir++)
-            if (nodes[node_idx] & child_mask[dir])
+        std::array<size_t, 4> children{};
+        size_t num_children = 0;
+        for (auto const dir: directions)
+            if (nodes[node_idx].get_edge(dir))
                 children[num_children++] = node_idx + jump[dir];
 
         // Sort the children in descending order of height.
-        for (int i = 1; i < num_children; i++)
-            for (int j = i; j > 0 && heights[children[j-1]] < heights[children[j]]; j--)
+        for (size_t i = 1; i < num_children; i++)
+            for (size_t j = i; j > 0 && heights[children[j-1]] < heights[children[j]]; j--)
                 std::swap(children[j], children[j-1]);
 
-        // Put the smallest tree on the stack last, so we visit it next.
-        for (int i = 0; i < num_children; i++)
+        // Put the smallest tree on the stack last, so that the search visits
+        // it next.
+        for (size_t i = 0; i < num_children; i++)
             dfs_stack.push(children[i]);
     }
 
@@ -271,12 +269,11 @@ std::vector<size_t> grid_graph::bfs() const
         unprocessed.pop_front();
         order.push_back(idx);
 
-        for (int dir = 0; dir < 4; dir++)
-            if (nodes[idx] & child_mask[dir])
+        for (auto const dir: directions)
+            if (nodes[idx].get_edge(dir))
                 unprocessed.push_back(idx + jump[dir]);
     }
 
     return order;
 }
-
 
