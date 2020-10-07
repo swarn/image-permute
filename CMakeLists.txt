@@ -40,3 +40,8 @@ add_subdirectory(external)
 
 add_subdirectory(src)
 
+option(ENABLE_TESTING "Enable Test Builds" OFF)
+if(ENABLE_TESTING)
+  enable_testing()
+  add_subdirectory(test)
+endif()
