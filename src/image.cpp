@@ -93,7 +93,7 @@ void write_image(array2d<pixel> const & pixels, char const * filename)
 bool has_all_colors(array2d<pixel> const & pixels)
 {
     constexpr int num_colors = 256 * 256 * 256;
-    if (pixels.size != num_colors)
+    if (pixels.size() != num_colors)
         return false;
 
     std::bitset<num_colors> has_color;

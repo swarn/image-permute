@@ -9,9 +9,9 @@
 array2d<pixel>
 match_ascending(array2d<pixel> const & picture, array2d<pixel> const & palette)
 {
-    std::vector<int> picture_indices(picture.size);
+    std::vector<int> picture_indices(picture.size());
     std::iota(picture_indices.begin(), picture_indices.end(), 0);
-    std::vector<int> palette_indices(picture.size);
+    std::vector<int> palette_indices(picture.size());
     std::iota(palette_indices.begin(), palette_indices.end(), 0);
 
     std::sort(picture_indices.begin(), picture_indices.end(),
@@ -20,7 +20,7 @@ match_ascending(array2d<pixel> const & picture, array2d<pixel> const & palette)
         [&](int lhs, int rhs) { return palette[lhs].lab.L < palette[rhs].lab.L; });
 
     array2d<pixel> result(picture.rows, picture.cols);
-    for (int i = 0; i < result.size; i++)
+    for (int i = 0; i < result.size(); i++)
         result[picture_indices[i]] = palette[palette_indices[i]];
 
     return result;
@@ -28,9 +28,9 @@ match_ascending(array2d<pixel> const & picture, array2d<pixel> const & palette)
 
 void compare_and_swap(array2d<pixel> const & input, array2d<pixel> & output, int passes)
 {
-    std::vector<int> here_idxs(input.size);
+    std::vector<int> here_idxs(input.size());
     std::iota(here_idxs.begin(), here_idxs.end(), 0);
-    std::vector<int> there_idxs(input.size);
+    std::vector<int> there_idxs(input.size());
     std::iota(there_idxs.begin(), there_idxs.end(), 0);
     std::random_device r;
     std::mt19937_64 gen{r()};
@@ -40,7 +40,7 @@ void compare_and_swap(array2d<pixel> const & input, array2d<pixel> & output, int
         std::shuffle(here_idxs.begin(), here_idxs.end(), gen);
         std::shuffle(there_idxs.begin(), there_idxs.end(), gen);
 
-        for (int i = 0; i < input.size; i++)
+        for (int i = 0; i < input.size(); i++)
         {
             auto here = here_idxs[i];
             auto there = there_idxs[i];
@@ -145,9 +145,9 @@ neighbor_info blur(array2d<pixel> const & array, int row, int col)
 void compare_and_swap_dithered(
     array2d<pixel> const & input, array2d<pixel> & output, int passes)
 {
-    std::vector<int> here_idxs(input.size);
+    std::vector<int> here_idxs(input.size());
     std::iota(here_idxs.begin(), here_idxs.end(), 0);
-    std::vector<int> there_idxs(input.size);
+    std::vector<int> there_idxs(input.size());
     std::iota(there_idxs.begin(), there_idxs.end(), 0);
     std::random_device r;
     std::mt19937_64 gen{r()};
@@ -190,18 +190,18 @@ void compare_and_swap_dithered(
             }
         }
 
-        float swap_freq = num_swaps * 1.0 / output.size;
+        float swap_freq = num_swaps * 1.0 / output.size();
         std::cout << "pass " << pass << ": "
-                  << num_swaps << '/' << output.size
+                  << num_swaps << '/' << output.size()
                   << " " << swap_freq;
 
         if (pass % 10 == 0)
         {
             double accum = 0;
-            for (int i = 0; i < output.size; i++)
+            for (int i = 0; i < output.size(); i++)
                 accum += diff2(output[i].lab, input[i].lab);
 
-            double rms = std::sqrt(accum / output.size);
+            double rms = std::sqrt(accum / output.size());
             std::cout << " rms: " << rms;
         }
 

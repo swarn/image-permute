@@ -42,7 +42,10 @@ int main(int argc, char * argv[])
     }
 
     auto const input = load_image(input_name.c_str());
-    auto output = array2d<pixel>(input.rows, input.cols, make_palette(input.size));
+    array2d<pixel> output(input.rows, input.cols);
+    auto palette = make_palette(input.size());
+    for (size_t i = 0; i < output.size(); i++)
+        output.data[i] = pixel{palette[i]};
 
     if (palette_out != "")
         write_image(output, palette_out.c_str());
@@ -52,7 +55,10 @@ int main(int argc, char * argv[])
     std::shuffle(output.data.begin(), output.data.end(), gen);
 
     if (ascending)
-        output = match_ascending(input, output);
+    {
+        auto sorted = match_ascending(input, output);
+        output.data = sorted.data;
+    }
     compare_and_swap(input, output, swap_passes);
     compare_and_swap_dithered(input, output, dither_passes);
 
