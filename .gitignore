@@ -1,5 +1,9 @@
-build/
+Testing/
 bin/
+build/
+.ccls-cache/
+.clangd/
+.vscode/
 
 *.png
 .DS_Store
