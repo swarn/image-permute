@@ -18,11 +18,6 @@ by evenly sampling the RGB colorspace.
 .. _2: https://codegolf.stackexchange.com/questions/22144/images-with-all-colors
 .. _3: https://possiblywrong.wordpress.com/2014/04/18/allrgb-hilbert-curves-and-random-spanning-trees/
 
-.. warning::
-
-    Most of this code was written while I was on vacation, sitting on a deck
-    chair, looking at the ocean, possibly having a drink.
-
 
 Examples
 ========
