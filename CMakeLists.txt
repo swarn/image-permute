@@ -25,6 +25,9 @@ add_library(project_warnings INTERFACE)
 include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
 
+# sanitizer options if supported by compiler
+include(cmake/StaticAnalyzers.cmake)
+
 # Create a list of every compile command used for each file, useful for
 # external linters, syntax checkers, etc.
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
