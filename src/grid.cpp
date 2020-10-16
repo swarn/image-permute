@@ -243,9 +243,8 @@ std::vector<size_t> grid_graph::sdfs() const
                 children[num_children++] = node_idx + jump[dir];
 
         // Sort the children in descending order of height.
-        for (size_t i = 1; i < num_children; i++)
-            for (size_t j = i; j > 0 && heights[children[j-1]] < heights[children[j]]; j--)
-                std::swap(children[j], children[j-1]);
+        std::sort(children.begin(), children.begin() + num_children,
+            [&](auto lhs, auto rhs){ return heights[lhs] > heights[rhs]; });
 
         // Put the smallest tree on the stack last, so that the search visits
         // it next.
