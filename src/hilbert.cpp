@@ -78,42 +78,43 @@ constexpr std::array<unsigned, 8> order_for_octant = {0, 7, 1, 6, 3, 4, 2, 5};
 // octant ordering appears unchanged.
 void rotate(unsigned octant, rgb & color)
 {
-    uint8_t t{};
-    switch (octant) {
-        case 0:
-            t = color.r;
-            color.r = color.b;
-            color.b = color.g;
-            color.g = t;
-            break;
-        case 1:
-            t = color.b;
-            color.b = ~color.g;
-            color.g = ~t;
-            break;
-        case 2:
-        case 6:
-            t = color.g;
-            color.g = color.b;
-            color.b = color.r;
-            color.r = t;
-            break;
-        case 3:
-        case 7:
-            t = color.g;
-            color.g = ~color.b;
-            color.b = ~color.r;
-            color.r = t;
-            break;
-        case 4:
-        case 5:
-            t = color.g;
-            color.g = ~color.r;
-            color.r = ~t;
-            break;
-        default:
-            // Should never be here.
-            break;
+    uint8_t t {};
+    switch (octant)
+    {
+    case 0:
+        t = color.r;
+        color.r = color.b;
+        color.b = color.g;
+        color.g = t;
+        break;
+    case 1:
+        t = color.b;
+        color.b = ~color.g;
+        color.g = ~t;
+        break;
+    case 2:
+    case 6:
+        t = color.g;
+        color.g = color.b;
+        color.b = color.r;
+        color.r = t;
+        break;
+    case 3:
+    case 7:
+        t = color.g;
+        color.g = ~color.b;
+        color.b = ~color.r;
+        color.r = t;
+        break;
+    case 4:
+    case 5:
+        t = color.g;
+        color.g = ~color.r;
+        color.r = ~t;
+        break;
+    default:
+        // Should never be here.
+        break;
     }
 }
 
@@ -121,42 +122,43 @@ void rotate(unsigned octant, rgb & color)
 // The inverse operation of `rotate`.
 void irotate(unsigned octant, rgb & color)
 {
-    uint8_t t{};
-    switch (octant) {
-        case 0:
-            t = color.g;
-            color.g = color.b;
-            color.b = color.r;
-            color.r = t;
-            break;
-        case 1:
-            t = color.b;
-            color.b = ~color.g;
-            color.g = ~t;
-            break;
-        case 2:
-        case 6:
-            t = color.r;
-            color.r = color.b;
-            color.b = color.g;
-            color.g = t;
-            break;
-        case 3:
-        case 7:
-            t = color.g;
-            color.g = color.r;
-            color.r = ~color.b;
-            color.b = ~t;
-            break;
-        case 4:
-        case 5:
-            t = color.g;
-            color.g = ~color.r;
-            color.r = ~t;
-            break;
-        default:
-            // Should never be here.
-            break;
+    uint8_t t {};
+    switch (octant)
+    {
+    case 0:
+        t = color.g;
+        color.g = color.b;
+        color.b = color.r;
+        color.r = t;
+        break;
+    case 1:
+        t = color.b;
+        color.b = ~color.g;
+        color.g = ~t;
+        break;
+    case 2:
+    case 6:
+        t = color.r;
+        color.r = color.b;
+        color.b = color.g;
+        color.g = t;
+        break;
+    case 3:
+    case 7:
+        t = color.g;
+        color.g = color.r;
+        color.r = ~color.b;
+        color.b = ~t;
+        break;
+    case 4:
+    case 5:
+        t = color.g;
+        color.g = ~color.r;
+        color.r = ~t;
+        break;
+    default:
+        // Should never be here.
+        break;
     }
 }
 

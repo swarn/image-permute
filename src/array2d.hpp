@@ -11,15 +11,17 @@ struct array2d
 
     // Construct the array by default-inserting `rows * cols` instances of T.
     array2d(size_type rows, size_type cols)
-        : rows{rows}, cols{cols}, data(rows * cols) { }
+        : rows {rows}, cols {cols}, data(rows * cols)
+    { }
 
     // Construct the array by copying frrom an `array2d<U>` where type `U` is
     // convertable to `T`.
     template <typename U>
     explicit array2d(array2d<U> const & other)
-        : rows{other.rows}
-        , cols{other.cols}
-        , data(other.data.begin(), other.data.end()) { }
+        : rows {other.rows}
+        , cols {other.cols}
+        , data(other.data.begin(), other.data.end())
+    { }
 
     T & operator()(size_type row, size_type col)
     {

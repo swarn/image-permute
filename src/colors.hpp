@@ -52,13 +52,14 @@ struct rgb_float
 {
     rgb_float() noexcept = default;
 
-    rgb_float(float r, float g, float b) noexcept
-        : r{r}, g{g}, b{b} { }
+    rgb_float(float r, float g, float b) noexcept : r {r}, g {g}, b {b}
+    { }
 
     explicit rgb_float(rgb const & c) noexcept
-        : r{static_cast<float>(c.r)}
-        , g{static_cast<float>(c.g)}
-        , b{static_cast<float>(c.b)} { }
+        : r {static_cast<float>(c.r)}
+        , g {static_cast<float>(c.g)}
+        , b {static_cast<float>(c.b)}
+    { }
 
     explicit rgb_float(xyz const &) noexcept;
 
@@ -69,7 +70,7 @@ struct rgb_float
 
     rgb_float operator-(rgb_float const & rhs) const
     {
-        return rgb_float{r - rhs.r, g - rhs.g, b - rhs.b};
+        return rgb_float {r - rhs.r, g - rhs.g, b - rhs.b};
     }
 
     rgb_float operator*(float f) const

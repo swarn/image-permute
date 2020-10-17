@@ -21,11 +21,10 @@ array2d<rgb> load_image(char const * filename)
 
     auto finished = png_image_finish_read(
         &image,
-        nullptr,    // background
+        nullptr, // background
         buffer.data(),
-        0,          // row stride
-        nullptr
-    );
+        0, // row stride
+        nullptr);
 
     if (finished == 0)
         throw std::runtime_error("failed to read PNG image");
@@ -65,13 +64,12 @@ void write_image(array2d<rgb> const & pixels, char const * filename)
     auto write_complete = png_image_write_to_file(
         &image,
         filename,
-        0,          // no need to convert to 8-bit
+        0, // no need to convert to 8-bit
         buffer.data(),
-        0,          // automatically determine row stride
-        nullptr     // no colormap
+        0, // automatically determine row stride
+        nullptr // no colormap
     );
 
     if (write_complete == 0)
         throw std::runtime_error(image.message); // NOLINT
 }
-

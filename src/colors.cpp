@@ -10,9 +10,10 @@
 
 
 rgb::rgb(unsigned value) noexcept
-    : r{static_cast<uint8_t>(value >> 16U)}
-    , g{static_cast<uint8_t>(value >>  8U)}
-    , b{static_cast<uint8_t>(value)} { }
+    : r {static_cast<uint8_t>(value >> 16U)}
+    , g {static_cast<uint8_t>(value >> 8U)}
+    , b {static_cast<uint8_t>(value)}
+{ }
 
 
 rgb::operator unsigned() const noexcept
@@ -35,9 +36,9 @@ bool rgb::operator!=(rgb const & rhs) const
 
 std::ostream & operator<<(std::ostream & out, rgb const & color)
 {
-    out << static_cast<int>(color.r) << ", "
-        << static_cast<int>(color.g) << ", "
-        << static_cast<int>(color.b);
+    out << static_cast<int>(color.r) << ", ";
+    out << static_cast<int>(color.g) << ", ";
+    out << static_cast<int>(color.b);
     return out;
 }
 
@@ -112,9 +113,9 @@ rgb_float::rgb_float(xyz const & input) noexcept
     double y = input.y / 100.000;
     double z = input.z / 100.000;
 
-    auto rc = x *  3.2406 + y * -1.5372 + z * -0.4986;
-    auto gc = x * -0.9689 + y *  1.8758 + z *  0.0415;
-    auto bc = x *  0.0557 + y * -0.2040 + z *  1.0570;
+    auto rc = x * +3.2406 + y * -1.5372 + z * -0.4986;
+    auto gc = x * -0.9689 + y * +1.8758 + z * +0.0415;
+    auto bc = x * +0.0557 + y * -0.2040 + z * +1.0570;
 
     r = static_cast<float>(
         (rc > 0.0031308) ? (1.055 * std::pow(rc, 1.0 / 2.4) - 0.055) : 12.92 * rc);
@@ -127,7 +128,7 @@ rgb_float::rgb_float(xyz const & input) noexcept
 
 lab::lab(xyz const & color) noexcept
 {
-    auto x = color.x /  95.047;
+    auto x = color.x / 095.047;
     auto y = color.y / 100.000;
     auto z = color.z / 108.883;
 
@@ -141,12 +142,12 @@ lab::lab(xyz const & color) noexcept
 }
 
 
-lab::lab(rgb const & color) noexcept
-    : lab{xyz{rgb_float{color}}} { }
+lab::lab(rgb const & color) noexcept : lab {xyz {rgb_float {color}}}
+{ }
 
 
-lab::lab(rgb_float const & color) noexcept
-    : lab{xyz{color}} { }
+lab::lab(rgb_float const & color) noexcept : lab {xyz {color}}
+{ }
 
 
 std::ostream & operator<<(std::ostream & out, lab const & color)
@@ -194,7 +195,7 @@ xyz::xyz(lab const & input) noexcept
     z = ((z3 > 0.008856) ? z3 : (z - 16.0 / 116.0) / 7.787);
 
     // Using D65 2° reference
-    x *=  95.047;
+    x *= 095.047;
     y *= 100.000;
     z *= 108.883;
 }
@@ -228,10 +229,9 @@ rgb color_transform::operator()(rgb color) const noexcept
     std::array<uint8_t, 3> colors {
         axis_inverted[0] ? static_cast<uint8_t>(~color.r) : color.r,
         axis_inverted[1] ? static_cast<uint8_t>(~color.g) : color.g,
-        axis_inverted[2] ? static_cast<uint8_t>(~color.b) : color.b
-    };
+        axis_inverted[2] ? static_cast<uint8_t>(~color.b) : color.b};
 
-    rgb changed{};
+    rgb changed {};
     changed.r = colors[axis_order[0]];
     changed.g = colors[axis_order[1]];
     changed.b = colors[axis_order[2]];

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <random>
 
-#include "clipp.h"
+#include <clipp.h>
 
 #include "array2d.hpp"
 #include "colors.hpp"
@@ -22,11 +22,11 @@ int main(int argc, char * argv[])
     unsigned seed = 0;
     bool cli_seed = false;
 
-    auto cli = (
+    clipp::group cli {
         value("input", input_name),
         value("output", output_name),
         (option("-p") & value("file", palette_out)) % "dump palette to image",
-        option("-a").set(ascending)
+        (option("-a").set(ascending))
             .doc("Match pixels in ascending order of luminance, without "
                  "regard for hue or saturation."),
         (option("-s") & integer("passes", swap_passes))
@@ -35,8 +35,7 @@ int main(int argc, char * argv[])
         (option("-d") & integer("passes", dither_passes))
             .doc("Swap pixels if it makes their neighborhood look more like "
                  "the input image, which effects color dithering."),
-        (option("-seed") & integer("n", seed).set(cli_seed)) % "set random seed value"
-    );
+        (option("-seed") & integer("n", seed).set(cli_seed)) % "set random seed value"};
 
     if (not parse(argc, argv, cli))
     {
@@ -54,7 +53,7 @@ int main(int argc, char * argv[])
     if (not palette_out.empty())
         write_image(output, palette_out.c_str());
 
-    permute_rng_type rng{seed};
+    permute_rng_type rng {seed};
     std::shuffle(output.data.begin(), output.data.end(), rng);
 
     if (ascending)
@@ -67,4 +66,3 @@ int main(int argc, char * argv[])
     write_image(output, output_name.c_str());
     return 0;
 }
-

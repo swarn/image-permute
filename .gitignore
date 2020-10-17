@@ -4,6 +4,7 @@ build/
 .ccls-cache/
 .clangd/
 .vscode/
+.cache/
 
 *.png
 .DS_Store

@@ -2,8 +2,8 @@
 #include <iostream>
 #include <random>
 
-#include "clipp.h"
-#include "XoshiroCpp.hpp"
+#include <XoshiroCpp.hpp>
+#include <clipp.h>
 
 #include "array2d.hpp"
 #include "colors.hpp"
@@ -22,21 +22,25 @@ int main(int argc, char * argv[])
     bool cli_seed = false;
     std::string filename;
     bool check = false;
-    enum class order {sdfs, dfs, bfs};
+    enum class order
+    {
+        sdfs,
+        dfs,
+        bfs
+    };
     order traversal = order::sdfs;
 
-    auto cli = (
+    clipp::group cli {
         integer("rows", rows),
         integer("cols", cols),
         value("output", filename),
         option("-check").set(check) % "check if output is a valid allRGB image",
-        "random spanning tree traversal order (default: sdfs)" % (
+        group {
             option("-sdfs").set(traversal, order::sdfs) % "shortest depth first" |
             option("-dfs").set(traversal, order::dfs) % "depth first" |
-            option("-bfs").set(traversal, order::bfs) % "breadth first"
-        ),
-        (option("-seed") & integer("n", seed).set(cli_seed)) % "set random seed value"
-    );
+            option("-bfs").set(traversal, order::bfs) % "breadth first"}
+            .doc("random spanning tree traversal order (default: sdfs"),
+        (option("-seed") & integer("n", seed).set(cli_seed)) % "set random seed value"};
 
     if (not parse(argc, argv, cli))
     {
@@ -51,7 +55,7 @@ int main(int argc, char * argv[])
     auto palette = make_palette(rows * cols);
     std::sort(palette.begin(), palette.end(), hilbert_compare);
 
-    grid_graph::rng_type rng{seed};
+    grid_graph::rng_type rng {seed};
 
     // My Hilbert sort always goes from black (0, 0, 0) to blue (0, 0, 255).
     // Randomly rotate and flip the color space, to allow other orderings.

@@ -1,7 +1,7 @@
 #ifndef PERMUTATIONS_HPP
 #define PERMUTATIONS_HPP
 
-#include "XoshiroCpp.hpp"
+#include <XoshiroCpp.hpp>
 
 #include "array2d.hpp"
 #include "colors.hpp"

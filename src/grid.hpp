@@ -56,16 +56,16 @@ private:
     struct node_t
     {
         // A status bit indicating if the node has been added to spanning tree.
-        bool in_tree: 1;
+        bool in_tree : 1;
 
         // A two-bit integer representing a direction pointing towards the
         // parent of the node.
-        uint8_t dir: 2;
+        uint8_t dir : 2;
 
         // Four bits, one for each direction. These indicate either grid
         // boundaries (during tree creation) or children (during tree
         // traversal).
-        uint8_t edges: 4;
+        uint8_t edges : 4;
 
         // Get/set one of the edge bits.
         bool get_edge(uint8_t direction) const;

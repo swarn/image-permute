@@ -9,6 +9,7 @@ Checks: >
     -google-*,
     -hicpp-braces-around-statements,
     -llvm-*,
+    -llvmlibc-*,
     -modernize-use-trailing-return-type,
     -modernize-use-nodiscard,
     -modernize-avoid-c-arrays,

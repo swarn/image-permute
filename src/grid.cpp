@@ -10,12 +10,12 @@
 namespace {
 
 // Enumerate the neighbor directions.
-constexpr uint8_t up    = 0;
+constexpr uint8_t up = 0;
 constexpr uint8_t right = 1;
-constexpr uint8_t down  = 2;
-constexpr uint8_t left  = 3;
+constexpr uint8_t down = 2;
+constexpr uint8_t left = 3;
 
-constexpr std::array<uint8_t, 4> directions { up, right, down, left };
+constexpr std::array<uint8_t, 4> directions {up, right, down, left};
 
 constexpr uint8_t opposite_of(uint8_t dir)
 {
@@ -44,12 +44,12 @@ void grid_graph::node_t::set_edge(uint8_t direction)
 
 
 grid_graph::grid_graph(size_t rows, size_t cols, rng_type & rng)
-    : nodes{rows * cols, {false, 0, 0}}
-    , rows{rows}
-    , cols{cols}
-    , root{0}
-    , jump{}
-    , neighbors{}
+    : nodes {rows * cols, {false, 0, 0}}
+    , rows {rows}
+    , cols {cols}
+    , root {0}
+    , jump {}
+    , neighbors {}
 {
     init_node_edges();
     init_jump_table();
@@ -103,7 +103,7 @@ void grid_graph::init_neighbors_table()
         // ...build a list of available neighbors. There will be at most four.
         available.clear();
         for (auto const dir: directions)
-            if(not has_bit_set(edge_value, dir))
+            if (not has_bit_set(edge_value, dir))
                 available.push_back(dir);
 
         // Repeat these options to fill out twelve possible options (with two,
@@ -236,18 +236,16 @@ std::vector<size_t> grid_graph::sdfs() const
         order.push_back(node_idx);
 
         // Build a list of up to four children.
-        std::array<size_t, 4> children{};
+        std::array<size_t, 4> children {};
         size_t num_children = 0;
         for (auto const dir: directions)
             if (nodes[node_idx].get_edge(dir))
                 children[num_children++] = node_idx + jump[dir];
 
-        // Sort the children in descending order of height.
-        std::sort(children.begin(), children.begin() + num_children,
-            [&](auto lhs, auto rhs){ return heights[lhs] > heights[rhs]; });
-
-        // Put the smallest tree on the stack last, so that the search visits
-        // it next.
+        // Sort the children in descending order of height, then put the
+        // shortest on the stack last, so that the search visits it first.
+        auto taller = [&](auto lhs, auto rhs) { return heights[lhs] > heights[rhs]; };
+        std::sort(children.begin(), children.begin() + num_children, taller);
         for (size_t i = 0; i < num_children; i++)
             dfs_stack.push(children[i]);
     }
@@ -262,7 +260,7 @@ std::vector<size_t> grid_graph::bfs() const
     std::deque<size_t> unprocessed;
     unprocessed.push_back(root);
 
-    while(not unprocessed.empty())
+    while (not unprocessed.empty())
     {
         auto idx = unprocessed.front();
         unprocessed.pop_front();
@@ -275,4 +273,3 @@ std::vector<size_t> grid_graph::bfs() const
 
     return order;
 }
-
