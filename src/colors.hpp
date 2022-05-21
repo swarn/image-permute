@@ -65,7 +65,7 @@ struct rgb_float
 
     rgb_float operator+(rgb_float const & rhs) const
     {
-        return rgb_float(r + rhs.r, g + rhs.g, b + rhs.b);
+        return {r + rhs.r, g + rhs.g, b + rhs.b};
     }
 
     rgb_float operator-(rgb_float const & rhs) const
@@ -75,7 +75,7 @@ struct rgb_float
 
     rgb_float operator*(float f) const
     {
-        return rgb_float(r * f, g * f, b * f);
+        return {r * f, g * f, b * f};
     }
 
     rgb_float & operator+=(rgb_float const & rhs)
