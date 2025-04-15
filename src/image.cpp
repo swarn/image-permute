@@ -1,6 +1,11 @@
+#include "image.hpp"
+
+#include <cstring>
+#include <stdexcept>
 #include <vector>
 
 #include <png.h>
+#include <pngconf.h>
 
 #include "array2d.hpp"
 #include "colors.hpp"

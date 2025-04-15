@@ -2,6 +2,8 @@
 Checks: >
     *,
     -abseil-*,
+    -altera-*,
+    -boost-*,
     -cppcoreguidelines-avoid-magic-numbers,
     -cppcoreguidelines-pro-bounds-constant-array-index,
     -cppcoreguidelines-pro-bounds-pointer-arithmetic,
@@ -15,6 +17,7 @@ Checks: >
     -modernize-avoid-c-arrays,
     -readability-magic-numbers,
     -readability-braces-around-statements,
+    -readability-identifier-length,
     -zircon-*
 
 HeaderFilterRegex: '*'

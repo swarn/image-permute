@@ -1,8 +1,11 @@
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <random>
+#include <string>
+#include <vector>
 
-#include <XoshiroCpp.hpp>
 #include <clipp.h>
 
 #include "array2d.hpp"
@@ -14,7 +17,7 @@
 using namespace clipp;
 
 
-int main(int argc, char * argv[])
+int main(int argc, char * argv[]) // NOLINT(bugprone-exception-escape)
 {
     size_t rows = 0;
     size_t cols = 0;
@@ -22,7 +25,7 @@ int main(int argc, char * argv[])
     bool cli_seed = false;
     std::string filename;
     bool check = false;
-    enum class order
+    enum class order : std::uint8_t
     {
         sdfs,
         dfs,
@@ -30,7 +33,7 @@ int main(int argc, char * argv[])
     };
     order traversal = order::sdfs;
 
-    clipp::group cli {
+    clipp::group const cli {
         integer("rows", rows),
         integer("cols", cols),
         value("output", filename),
@@ -64,7 +67,7 @@ int main(int argc, char * argv[])
         color = transform(color);
 
     // Generate a random spanning tree across the output image pixels.
-    grid_graph graph(rows, cols, rng);
+    grid_graph const graph(rows, cols, rng);
 
     // Order the pixels with a traversal of the spanning tree.
     std::vector<size_t> ordering;

@@ -1,7 +1,11 @@
 #include "colors.hpp"
 
+#include <algorithm>
+#include <array>
 #include <bitset>
 #include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <random>
 #include <vector>
@@ -109,20 +113,20 @@ bool has_all_colors(std::vector<rgb> const & pixels)
 
 rgb_float::rgb_float(xyz const & input) noexcept
 {
-    double x = input.x / 100.000;
-    double y = input.y / 100.000;
-    double z = input.z / 100.000;
+    double const x = input.x / 100.000;
+    double const y = input.y / 100.000;
+    double const z = input.z / 100.000;
 
-    auto rc = x * +3.2406 + y * -1.5372 + z * -0.4986;
-    auto gc = x * -0.9689 + y * +1.8758 + z * +0.0415;
-    auto bc = x * +0.0557 + y * -0.2040 + z * +1.0570;
+    auto rc = (x * +3.2406) + (y * -1.5372) + (z * -0.4986);
+    auto gc = (x * -0.9689) + (y * +1.8758) + (z * +0.0415);
+    auto bc = (x * +0.0557) + (y * -0.2040) + (z * +1.0570);
 
     r = static_cast<float>(
-        (rc > 0.0031308) ? (1.055 * std::pow(rc, 1.0 / 2.4) - 0.055) : 12.92 * rc);
+        (rc > 0.0031308) ? ((1.055 * std::pow(rc, 1.0 / 2.4)) - 0.055) : 12.92 * rc);
     g = static_cast<float>(
-        (gc > 0.0031308) ? (1.055 * std::pow(gc, 1.0 / 2.4) - 0.055) : 12.92 * gc);
+        (gc > 0.0031308) ? ((1.055 * std::pow(gc, 1.0 / 2.4)) - 0.055) : 12.92 * gc);
     b = static_cast<float>(
-        (bc > 0.0031308) ? (1.055 * std::pow(bc, 1.0 / 2.4) - 0.055) : 12.92 * bc);
+        (bc > 0.0031308) ? ((1.055 * std::pow(bc, 1.0 / 2.4)) - 0.055) : 12.92 * bc);
 }
 
 
@@ -132,9 +136,9 @@ lab::lab(xyz const & color) noexcept
     auto y = color.y / 100.000;
     auto z = color.z / 108.883;
 
-    x = (x > 0.008856) ? std::pow(x, 1.0 / 3.0) : (7.787 * x) + 16.0 / 116.0;
-    y = (y > 0.008856) ? std::pow(y, 1.0 / 3.0) : (7.787 * y) + 16.0 / 116.0;
-    z = (z > 0.008856) ? std::pow(z, 1.0 / 3.0) : (7.787 * z) + 16.0 / 116.0;
+    x = (x > 0.008856) ? std::pow(x, 1.0 / 3.0) : (7.787 * x) + (16.0 / 116.0);
+    y = (y > 0.008856) ? std::pow(y, 1.0 / 3.0) : (7.787 * y) + (16.0 / 116.0);
+    z = (z > 0.008856) ? std::pow(z, 1.0 / 3.0) : (7.787 * z) + (16.0 / 116.0);
 
     L = static_cast<float>((116.0 * y) - 16.0);
     a = static_cast<float>(500.0 * (x - y));
@@ -187,9 +191,9 @@ xyz::xyz(lab const & input) noexcept
     x = a / 500.0 + y;
     z = y - b / 200.0;
 
-    double x3 = x * x * x;
-    double y3 = y * y * y;
-    double z3 = z * z * z;
+    double const x3 = x * x * x;
+    double const y3 = y * y * y;
+    double const z3 = z * z * z;
     x = ((x3 > 0.008856) ? x3 : (x - 16.0 / 116.0) / 7.787);
     y = ((y3 > 0.008856) ? y3 : (y - 16.0 / 116.0) / 7.787);
     z = ((z3 > 0.008856) ? z3 : (z - 16.0 / 116.0) / 7.787);
@@ -206,7 +210,7 @@ float diff2(lab const & lhs, lab const & rhs)
     auto dL = lhs.L - rhs.L;
     auto da = lhs.a - rhs.a;
     auto db = lhs.b - rhs.b;
-    return dL * dL + da * da + db * db;
+    return (dL * dL) + (da * da) + (db * db);
 }
 
 

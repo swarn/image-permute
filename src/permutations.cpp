@@ -1,9 +1,15 @@
 #include "permutations.hpp"
 
 #include <algorithm>
+#include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <numeric>
-#include <random>
+#include <vector>
+
+#include "array2d.hpp"
+#include "colors.hpp"
 
 
 void match_ascending(array2d<rgb> const & input, array2d<rgb> & output)
@@ -131,8 +137,8 @@ constexpr uint8_t edges(size_t row, size_t col, size_t rows, size_t cols)
 // This result can be added to a central pixel to get the complete convolution.
 rgb_float blur_around(array2d<rgb> const & array, size_t neighborhood)
 {
-    size_t col = neighborhood % array.cols;
-    size_t row = neighborhood / array.cols;
+    size_t const col = neighborhood % array.cols;
+    size_t const row = neighborhood / array.cols;
 
     // Determine which of nine kernels to use, based on edge adjacency.
     uint8_t const region = edges(row, col, array.rows, array.cols);
@@ -199,8 +205,8 @@ rgb_float blur_around(array2d<rgb> const & array, size_t neighborhood)
 rgb_float
 blur_for(array2d<rgb_float> const & neighborhood, size_t pos, rgb const & center)
 {
-    size_t col = pos % neighborhood.cols;
-    size_t row = pos / neighborhood.cols;
+    size_t const col = pos % neighborhood.cols;
+    size_t const row = pos / neighborhood.cols;
 
     // Sum this pixel with the pos to get the blurred version.
     auto blurred = neighborhood[pos] + rgb_float {center} * 4.0;
@@ -231,8 +237,8 @@ blur_for(array2d<rgb_float> const & neighborhood, size_t pos, rgb const & center
 void update_blur(
     array2d<rgb_float> & array, size_t neighborhood, rgb_float const & delta)
 {
-    size_t col = neighborhood % array.cols;
-    size_t row = neighborhood / array.cols;
+    size_t const col = neighborhood % array.cols;
+    size_t const row = neighborhood / array.cols;
 
     // Determine which neighbors to update, based on edge adjacency.  Ignore
     // the degenerate cases where a pixel is adjacent to more than two edges,
@@ -337,12 +343,12 @@ void compare_and_swap_dithered(
             constexpr int ahead = 4;
             auto future_here = i < here_idxs.size() ? here_idxs[i + ahead] : 0;
             auto future_there = i < there_idxs.size() ? there_idxs[i + ahead] : 0;
-            __builtin_prefetch(&output[future_here]); // NOLINT
-            __builtin_prefetch(&output[future_there]); // NOLINT
-            __builtin_prefetch(&blurred_neighbors[future_here]); // NOLINT
-            __builtin_prefetch(&blurred_neighbors[future_there]); // NOLINT
-            __builtin_prefetch(&input_lab[future_here]); // NOLINT
-            __builtin_prefetch(&input_lab[future_there]); // NOLINT
+            __builtin_prefetch(&output[future_here]);
+            __builtin_prefetch(&output[future_there]);
+            __builtin_prefetch(&blurred_neighbors[future_here]);
+            __builtin_prefetch(&blurred_neighbors[future_there]);
+            __builtin_prefetch(&input_lab[future_here]);
+            __builtin_prefetch(&input_lab[future_there]);
 
             // What does this output pixel look like with a little blur?  What
             // would it look like if swapped with the other pixel?
@@ -373,7 +379,7 @@ void compare_and_swap_dithered(
             }
         }
 
-        double swap_freq = num_swaps / static_cast<double>(output.size());
+        double const swap_freq = num_swaps / static_cast<double>(output.size());
         std::cout << "pass " << pass << ": ";
         std::cout << num_swaps << '/' << output.size() << " " << swap_freq;
 
@@ -383,7 +389,7 @@ void compare_and_swap_dithered(
             for (size_t i = 0; i < output.size(); i++)
                 accum += diff2(lab {output[i]}, input_lab[i]);
 
-            float rms = std::sqrt(accum / static_cast<float>(output.size()));
+            float const rms = std::sqrt(accum / static_cast<float>(output.size()));
             std::cout << " rms: " << rms;
         }
 

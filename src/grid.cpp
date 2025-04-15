@@ -1,10 +1,13 @@
 #include "grid.hpp"
 
+#include <algorithm>
 #include <array>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
-#include <queue>
 #include <random>
 #include <stack>
+#include <vector>
 
 
 namespace {
@@ -138,8 +141,8 @@ void grid_graph::span(rng_type & rng)
         auto here = start;
         while (not nodes[here].in_tree)
         {
-            uint8_t possible = nodes[here].edges;
-            uint8_t parent_dir = neighbors[possible][d12(rng)];
+            uint8_t const possible = nodes[here].edges;
+            uint8_t const parent_dir = neighbors[possible][d12(rng)];
             nodes[here].dir = parent_dir;
             here += jump[parent_dir];
         }

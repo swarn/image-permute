@@ -1,5 +1,7 @@
+#include <algorithm>
 #include <iostream>
 #include <random>
+#include <string>
 
 #include <clipp.h>
 
@@ -11,7 +13,7 @@
 using namespace clipp;
 
 
-int main(int argc, char * argv[])
+int main(int argc, char * argv[]) // NOLINT(bugprone-exception-escape)
 {
     std::string input_name;
     std::string output_name;
@@ -22,20 +24,21 @@ int main(int argc, char * argv[])
     unsigned seed = 0;
     bool cli_seed = false;
 
-    clipp::group cli {
+    clipp::group const cli {
         value("input", input_name),
         value("output", output_name),
         (option("-p") & value("file", palette_out)) % "dump palette to image",
-        (option("-a").set(ascending))
-            .doc("Match pixels in ascending order of luminance, without "
-                 "regard for hue or saturation."),
-        (option("-s") & integer("passes", swap_passes))
-            .doc("Swap pixels if it makes them look more like the input image. "
-                 "Passes is roughly how many times it tries for each pixel"),
-        (option("-d") & integer("passes", dither_passes))
-            .doc("Swap pixels if it makes their neighborhood look more like "
-                 "the input image, which effects color dithering."),
-        (option("-seed") & integer("n", seed).set(cli_seed)) % "set random seed value"};
+        (option("-a").set(ascending)) %
+            "Match pixels in ascending order of luminance, without regard for hue or "
+            "saturation.",
+        (option("-s") & integer("passes") >> swap_passes) %
+            "Swap pixels if it makes them look more like the input image. Passes is "
+            "roughly how many times it tries for each pixel",
+        (option("-d") & integer("passes") >> dither_passes) %
+            "Swap pixels if it makes their neighborhood look more like the input "
+            "image, which effects color dithering.",
+        (option("-seed").set(cli_seed) & integer("n") >> seed) %
+            "set random seed value"};
 
     if (not parse(argc, argv, cli))
     {

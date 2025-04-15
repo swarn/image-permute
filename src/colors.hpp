@@ -5,6 +5,9 @@
 #define COLORS_HPP
 
 #include <array>
+#include <cstddef>
+#include <cstdint>
+#include <ostream>
 #include <vector>
 
 #include "XoshiroCpp.hpp"
@@ -52,6 +55,7 @@ struct rgb_float
 {
     rgb_float() noexcept = default;
 
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
     rgb_float(float r, float g, float b) noexcept : r {r}, g {g}, b {b}
     { }
 

@@ -1,6 +1,9 @@
 #include "hilbert.hpp"
 
 #include <array>
+#include <cstdint>
+
+#include "colors.hpp"
 
 /* This 3D version of the Hilbert curve is (I think) a fractal. Divide a cube
  * into octants and visit them in some order. Further divide each octant into
@@ -169,7 +172,7 @@ void irotate(unsigned octant, rgb & color)
 // (0, 0, 128) is in octave 1. At step 1, it's in octant 0.
 constexpr uint8_t get_octant(rgb const & c, unsigned step)
 {
-    uint8_t mask = 0b1000'0000U >> step;
+    uint8_t const mask = 0b1000'0000U >> step;
     uint8_t octant = 0;
     octant |= (c.r & mask) != 0 ? 0b100U : 0;
     octant |= (c.g & mask) != 0 ? 0b010U : 0;
@@ -205,7 +208,7 @@ rgb hilbert_decode(unsigned d)
     // Invert the process of `hilbert_encode`.
     for (int i = 0; i < 8; i++)
     {
-        uint8_t order = d & 0b111U;
+        uint8_t const order = d & 0b111U;
         auto octant = octant_for_order[order];
 
         irotate(octant, retval);

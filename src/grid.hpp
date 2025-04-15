@@ -10,6 +10,8 @@
 #define GRID_HPP
 
 #include <array>
+#include <cstddef>
+#include <cstdint>
 #include <vector>
 
 #include "XoshiroCpp.hpp"
@@ -44,8 +46,8 @@ private:
     // Store the nodes in a row-major array.
     struct node_t;
     std::vector<node_t> nodes;
-    size_t const rows;
-    size_t const cols;
+    size_t rows;
+    size_t cols;
 
     // One node is the root of the tree.
     size_t root;

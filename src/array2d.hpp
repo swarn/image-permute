@@ -25,12 +25,12 @@ struct array2d
 
     T & operator()(size_type row, size_type col)
     {
-        return data[row * cols + col];
+        return data[(row * cols) + col];
     }
 
     T const & operator()(size_type row, size_type col) const
     {
-        return data[row * cols + col];
+        return data[(row * cols) + col];
     }
 
     T & operator[](size_type idx)
@@ -48,8 +48,8 @@ struct array2d
         return data.size();
     }
 
-    size_type const rows;
-    size_type const cols;
+    size_type rows;
+    size_type cols;
     std::vector<T> data;
 };
 
